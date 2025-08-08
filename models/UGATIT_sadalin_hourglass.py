@@ -166,22 +166,26 @@ class UgatitSadalinHourglass(object):
         # training loop
         print('training start !')
         start_time = time.time()
+        # Initialize iterators before the loop
+        trainA_iter = iter(self.trainA_loader)
+        trainB_iter = iter(self.trainB_loader)
+        
         for step in range(start_iter, self.iteration + 1):
             if self.decay_flag and step > (self.iteration // 2):
                 self.G_optim.param_groups[0]['lr'] -= (self.lr / (self.iteration // 2))
                 self.D_optim.param_groups[0]['lr'] -= (self.lr / (self.iteration // 2))
 
             try:
-                real_A, _ = trainA_iter.next()
-            except:
+                real_A, _ = next(trainA_iter)
+            except StopIteration:
                 trainA_iter = iter(self.trainA_loader)
-                real_A, _ = trainA_iter.next()
+                real_A, _ = next(trainA_iter)
 
             try:
-                real_B, _ = trainB_iter.next()
-            except:
+                real_B, _ = next(trainB_iter)
+            except StopIteration:
                 trainB_iter = iter(self.trainB_loader)
-                real_B, _ = trainB_iter.next()
+                real_B, _ = next(trainB_iter)
 
             real_A, real_B = real_A.to(self.device), real_B.to(self.device)
 
@@ -305,16 +309,16 @@ class UgatitSadalinHourglass(object):
                 with torch.no_grad():
                     for _ in range(train_sample_num):
                         try:
-                            real_A, _ = trainA_iter.next()
-                        except:
+                            real_A, _ = next(trainA_iter)
+                        except StopIteration:
                             trainA_iter = iter(self.trainA_loader)
-                            real_A, _ = trainA_iter.next()
+                            real_A, _ = next(trainA_iter)
 
                         try:
-                            real_B, _ = trainB_iter.next()
-                        except:
+                            real_B, _ = next(trainB_iter)
+                        except StopIteration:
                             trainB_iter = iter(self.trainB_loader)
-                            real_B, _ = trainB_iter.next()
+                            real_B, _ = next(trainB_iter)
                         real_A, real_B = real_A.to(self.device), real_B.to(self.device)
 
                         fake_A2B, _, fake_A2B_heatmap = self.genA2B(real_A)
@@ -344,16 +348,16 @@ class UgatitSadalinHourglass(object):
 
                     for _ in range(test_sample_num):
                         try:
-                            real_A, _ = testA_iter.next()
-                        except:
+                            real_A, _ = next(testA_iter)
+                        except StopIteration:
                             testA_iter = iter(self.testA_loader)
-                            real_A, _ = testA_iter.next()
+                            real_A, _ = next(testA_iter)
 
                         try:
-                            real_B, _ = testB_iter.next()
-                        except:
+                            real_B, _ = next(testB_iter)
+                        except StopIteration:
                             testB_iter = iter(self.testB_loader)
-                            real_B, _ = testB_iter.next()
+                            real_B, _ = next(testB_iter)
                         real_A, real_B = real_A.to(self.device), real_B.to(self.device)
 
                         fake_A2B, _, fake_A2B_heatmap = self.genA2B(real_A)
