@@ -17,7 +17,7 @@ os.makedirs(os.path.dirname(args.save_path), exist_ok=True)
 class Photo2Cartoon:
     def __init__(self):
         self.pre = Preprocess()
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")  # Force CPU usage
         self.net = ResnetGenerator(ngf=32, img_size=256, light=True).to(self.device)
         
         assert os.path.exists('./models/photo2cartoon_weights.pt'), "[Step1: load weights] Can not find 'photo2cartoon_weights.pt' in folder 'models!!!'"

@@ -44,7 +44,7 @@ class UgatitSadalinHourglass(object):
         self.img_size = args.img_size
         self.img_ch = args.img_ch
 
-        self.device = f'cuda:{args.gpu_ids[0]}'
+        self.device = 'cpu'  # Always use CPU regardless of gpu_ids
         self.gpu_ids = args.gpu_ids
         self.benchmark_flag = args.benchmark_flag
         self.resume = args.resume
@@ -52,9 +52,12 @@ class UgatitSadalinHourglass(object):
         self.w_clipper = args.w_clipper
         self.pretrained_weights = args.pretrained_weights
 
-        if torch.backends.cudnn.enabled and self.benchmark_flag:
+        # Disabled CUDNN benchmark as we're using CPU
+        if torch.backends.cudnn.enabled and self.benchmark_flag and 'cuda' in self.device:
             print('set benchmark !')
             torch.backends.cudnn.benchmark = True
+        else:
+            print('Using CPU - CUDNN benchmark disabled')
 
         print("##### Information #####")
         print("# light : ", self.light)
@@ -155,7 +158,8 @@ class UgatitSadalinHourglass(object):
             self.disLB.load_state_dict(params['disLB'])
             print(" [*] Load {} Success".format(self.pretrained_weights))
 
-        if len(self.gpu_ids) > 1:
+        # DataParallel disabled for CPU training
+        if len(self.gpu_ids) > 1 and 'cuda' in self.device:
             self.genA2B = nn.DataParallel(self.genA2B, device_ids=self.gpu_ids)
             self.genB2A = nn.DataParallel(self.genB2A, device_ids=self.gpu_ids)
             self.disGA = nn.DataParallel(self.disGA, device_ids=self.gpu_ids)
